@@ -11,7 +11,9 @@
         user_cannot_change_password: true
         account_disabled: false
 
-    - name: Override domain fact with hostname for local account SID resolution
-      set_fact:
-        ansible_facts:
-          windows_domain: "{{ ansible_hostname }}"
+    - name: Add user to Administrators group (using custom domain var)
+      ansible.windows.win_group_membership:
+        name: Administrators
+        members:
+          - '{{ windows_domain }}\svc-vision-account'
+        state: present
