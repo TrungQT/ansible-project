@@ -1,0 +1,45 @@
+- name: Diagnose AWX EE environment
+  hosts: localhost
+  gather_facts: false
+  tasks:
+
+    - name: Show current user running inside EE
+      command: whoami
+      register: whoami_result
+
+    - name: Show home directory
+      command: echo $HOME
+      register: home_dir
+
+    - name: Show current working directory
+      command: pwd
+      register: cwd
+
+    - name: List files in working directory
+      command: ls -al
+      register: file_list
+
+    - name: List /runner directory (typical working dir in AWX)
+      command: ls -al /runner
+      register: runner_list
+      ignore_errors: true
+
+    - name: Check if /nps exists
+      stat:
+        path: /nps
+      register: nps_status
+
+    - name: Show environment variables
+      shell: env
+      register: env_vars
+
+    - name: Display results
+      debug:
+        msg:
+          - "User: {{ whoami_result.stdout }}"
+          - "HOME: {{ home_dir.stdout }}"
+          - "CWD: {{ cwd.stdout }}"
+          - "Files in CWD:\n{{ file_list.stdout }}"
+          - "/runner:\n{{ runner_list.stdout | default('Not found') }}"
+          - "/nps exists: {{ nps_status.stat.exists | default(false) }}"
+          - "Env Vars:\n{{ env_vars.stdout }}"
