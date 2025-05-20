@@ -10,3 +10,8 @@
         password_never_expires: true
         user_cannot_change_password: true
         account_disabled: false
+        
+    - name: Override domain fact with hostname for local account SID resolution
+      set_fact:
+        ansible_facts:
+          windows_domain: "{{ ansible_hostname }}"
