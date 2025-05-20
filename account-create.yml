@@ -143,7 +143,21 @@
     windows_domain: "{{ ansible_hostname }}"
     profile_marker: C:\Temp\profile_loaded.txt
   tasks:
+    - name: Create a local user
+      ansible.windows.win_user:
+        name: svc-vision-account
+        password: "Str0ngP@ssw0rd2025!"
+        password_never_expires: true
+        user_cannot_change_password: true
+        account_disabled: false
 
+    - name: Add user to Administrators group (correct format)
+      ansible.windows.win_group_membership:
+        name: Administrators
+        members:
+          - '{{ windows_domain }}\svc-vision-account'
+        state: present
+        
     - name: Ensure C:\Temp directory exists
       ansible.windows.win_file:
         path: C:\Temp
