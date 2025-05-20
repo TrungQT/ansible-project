@@ -20,6 +20,11 @@
         members:
           - '{{ windows_domain }}\svc-vision-account'
         state: present
+        
+    - name: Ensure C:\Temp directory exists
+      ansible.windows.win_file:
+        path: C:\Temp
+        state: directory
 
     - name: Check if Administrator profile already exists
       ansible.windows.win_stat:
