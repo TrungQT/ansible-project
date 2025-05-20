@@ -1,8 +1,8 @@
 - name: Create local admin user on Windows
   hosts: vision_servers
   gather_facts: true
-  # vars:
-  # windows_domain: "{{ ansible_hostname }}"
+  vars:
+    windows_domain: "{{ ansible_hostname }}"  # 👈 use NetBIOS hostname here
   tasks:
 
     - name: Create a local user
@@ -13,9 +13,9 @@
         user_cannot_change_password: true
         account_disabled: false
 
-    - name: Add user to Administrators group (using custom domain var)
+    - name: Add user to Administrators group (correct format)
       ansible.windows.win_group_membership:
         name: Administrators
         members:
-          - '{{ windows_domain }}\svc-vision-account'
+          - '{{ windows_domain }}\svc-vision-account'  # 👈 now resolves correctly
         state: present
