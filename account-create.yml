@@ -98,3 +98,40 @@
       ansible.windows.win_file:
         path: "{{ psexec_path }}"
         state: absent
+
+    - name: Create profile-loading script
+      ansible.windows.win_copy:
+        dest: C:\Temp\load_profile.bat
+        content: |
+          @echo off
+          echo Loading profile...
+          whoami > C:\Temp\profile_user.txt
+          echo Profile loaded > C:\Temp\profile_loaded.txt
+          exit 0
+
+    - name: Create scheduled task to load profile
+      ansible.windows.win_scheduled_task:
+        name: LoadProfile
+        description: Load user profile for DPAPI
+        actions:
+          - path: cmd.exe
+            arguments: /c C:\Temp\load_profile.bat
+        username: Administrator
+        password: "{{ ansible_password }}"
+        run_level: highest
+        logon_type: interactive
+        state: present
+        enabled: true
+
+    - name: Run scheduled task
+      ansible.windows.win_scheduled_task:
+        name: LoadProfile
+        state: run
+
+    - name: Wait for profile to be loaded
+      ansible.windows.win_stat:
+        path: C:\Temp\profile_loaded.txt
+      register: profile_status
+      until: profile_status.stat.exists
+      retries: 5
+      delay: 10
