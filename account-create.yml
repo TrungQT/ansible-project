@@ -157,7 +157,7 @@
         members:
           - '{{ windows_domain }}\svc-vision-account'
         state: present
-        
+
     - name: Ensure C:\Temp directory exists
       ansible.windows.win_file:
         path: C:\Temp
@@ -192,6 +192,9 @@
         name: LoadProfile
         state: present
 
+    - name: Run scheduled task
+      ansible.windows.win_command: schtasks /Run /TN "LoadProfile"
+      
     - name: Wait for profile to be loaded
       ansible.windows.win_stat:
         path: C:\Temp\profile_loaded.txt
