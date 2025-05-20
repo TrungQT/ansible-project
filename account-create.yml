@@ -1,0 +1,12 @@
+- name: Create local admin user on Windows
+  hosts: vision_servers
+  gather_facts: false
+  tasks:
+
+    - name: Create a local user
+      ansible.windows.win_user:
+        name: svc-vision-account
+        password: "{{ svc_vision_password }}"
+        password_never_expires: true
+        user_cannot_change_password: true
+        account_disabled: false
