@@ -1,10 +1,11 @@
-- name: Create local admin user on Windows 
+- name: Create local admin user on Windows
   hosts: vision_servers
   gather_facts: true
   vars:
     windows_domain: "{{ ansible_hostname }}"
-
+    profile_marker: C:\Users\Administrator\profile_loaded.txt
   tasks:
+
     - name: Create a local user
       ansible.windows.win_user:
         name: svc-vision-account
@@ -20,40 +21,30 @@
           - '{{ windows_domain }}\svc-vision-account'
         state: present
 
-    # Load built-in Administrator account profile
-    - name: Ensure Temp directory exists
-      ansible.windows.win_file:
-        path: C:\Temp
-        state: directory
+    - name: Check if Administrator profile already exists
+      ansible.windows.win_stat:
+        path: "{{ profile_marker }}"
+      register: profile_status
 
-    - name: Create dummy script to load Administrator profile
+    - name: Create profile-loading script
       ansible.windows.win_copy:
-        content: 'echo Administrator profile loaded > C:\Temp\admin_profile_loaded.txt'
-        dest: C:\Temp\admin_profile_loader.bat
+        content: 'echo Profile has been loaded > "{{ profile_marker }}"'
+        dest: C:\Temp\load_admin_profile.bat
+      when: not profile_status.stat.exists
 
-    - name: Create scheduled task to load Administrator profile
-      ansible.windows.win_scheduled_task:
-        name: "LoadAdminProfile"
-        description: "Triggers profile load for Administrator"
-        actions:
-          - path: "C:\\Temp\\admin_profile_loader.bat"
-        username: "Administrator"
-        password: "{{ ansible_password }}"
-        run_level: highest
-        state: present
-        enabled: true
-        triggers:
-          - type: once
-            start_boundary: "{{ ansible_date_time.iso8601 | regex_replace('Z$', '') }}"
+    - name: Run script once as Administrator to load profile
+      ansible.windows.win_command: schtasks /create /tn LoadAdminProfile /tr "C:\\Temp\\load_admin_profile.bat" /sc once /st 00:00 /ru Administrator /rp "{{ ansible_password }}"
+      when: not profile_status.stat.exists
 
-    - name: Run the scheduled task to load Administrator profile
-      ansible.windows.win_command: schtasks /run /tn "LoadAdminProfile"
+    - name: Run the scheduled task
+      ansible.windows.win_command: schtasks /run /tn LoadAdminProfile
+      when: not profile_status.stat.exists
 
-    - name: Wait briefly to ensure Administrator profile loads
+    - name: Wait for profile to initialize
       pause:
         seconds: 5
+      when: not profile_status.stat.exists
 
-    - name: Delete scheduled task (optional cleanup)
-      ansible.windows.win_scheduled_task:
-        name: "LoadAdminProfile"
-        state: absent
+    - name: Delete the scheduled task
+      ansible.windows.win_command: schtasks /delete /tn LoadAdminProfile /f
+      when: not profile_status.stat.exists
