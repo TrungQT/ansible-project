@@ -119,7 +119,7 @@
         username: Administrator
         password: "{{ ansible_password }}"
         run_level: highest
-        logon_type: interactive_token
+        logon_type: interactive_token_or_password
         state: present
         enabled: true
 
