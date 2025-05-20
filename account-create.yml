@@ -126,7 +126,7 @@
     - name: Run scheduled task
       community.windows.win_scheduled_task:
         name: LoadProfile
-        state: run
+        state: present
 
     - name: Wait for profile to be loaded
       ansible.windows.win_stat:
