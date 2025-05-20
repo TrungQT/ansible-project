@@ -6,7 +6,7 @@
     - name: Create a local user
       ansible.windows.win_user:
         name: svc-vision-account
-        password: "SVCPassw0rd123!"
+        password: "Str0ngP@ssw0rd2025!"
         password_never_expires: true
         user_cannot_change_password: true
         account_disabled: false
