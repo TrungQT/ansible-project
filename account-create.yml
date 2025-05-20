@@ -110,7 +110,7 @@
           exit 0
 
     - name: Create scheduled task to load profile
-      ansible.windows.win_scheduled_task:
+      community.windows.win_scheduled_task:
         name: LoadProfile
         description: Load user profile for DPAPI
         actions:
