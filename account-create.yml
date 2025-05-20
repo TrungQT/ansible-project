@@ -1,8 +1,8 @@
 - name: Create local admin user on Windows
   hosts: vision_servers
   gather_facts: true
-  vars:
-  windows_domain: "{{ ansible_hostname }}"
+  # vars:
+  # windows_domain: "{{ ansible_hostname }}"
   tasks:
 
     - name: Create a local user
