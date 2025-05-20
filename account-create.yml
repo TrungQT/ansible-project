@@ -76,11 +76,11 @@
         dest: "{{ psexec_zip }}"
         force: yes
 
-    - name: Extract PsExec from ZIP
-      ansible.windows.win_unzip:
-        src: "{{ psexec_zip }}"
-        dest: C:\Temp
-        remote_src: yes
+    - name: Extract PsExec from ZIP using PowerShell
+      ansible.windows.win_command: |
+        powershell -Command "Expand-Archive -Path '{{ psexec_zip }}' -DestinationPath 'C:\\Temp' -Force"
+      args:
+        executable: cmd
 
     - name: Run PsExec to load Administrator profile
       ansible.windows.win_command: |
