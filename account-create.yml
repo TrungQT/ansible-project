@@ -1,6 +1,6 @@
 - name: Create local admin user on Windows
   hosts: vision_servers
-  gather_facts: false
+  gather_facts: true
   tasks:
 
     - name: Create a local user
@@ -14,4 +14,4 @@
     - name: Override domain fact with hostname for local account SID resolution
       set_fact:
         ansible_facts:
-          windows_domain: "{{ inventory_hostname }}"
+          windows_domain: "{{ ansible_hostname }}"
