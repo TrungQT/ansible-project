@@ -20,7 +20,7 @@
           - '{{ windows_domain }}\svc-vision-account'
         state: present
 
-    # ✅ Load built-in Administrator account profile
+    # Load built-in Administrator account profile
     - name: Ensure Temp directory exists
       ansible.windows.win_file:
         path: C:\Temp
