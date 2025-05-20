@@ -1,10 +1,10 @@
-- name: Create local admin user on Windows
+- name: Create local admin user on Windows 
   hosts: vision_servers
   gather_facts: true
   vars:
-    windows_domain: "{{ ansible_hostname }}"  # 👈 use NetBIOS hostname here
-  tasks:
+    windows_domain: "{{ ansible_hostname }}"
 
+  tasks:
     - name: Create a local user
       ansible.windows.win_user:
         name: svc-vision-account
@@ -17,5 +17,43 @@
       ansible.windows.win_group_membership:
         name: Administrators
         members:
-          - '{{ windows_domain }}\svc-vision-account'  # 👈 now resolves correctly
+          - '{{ windows_domain }}\svc-vision-account'
         state: present
+
+    # ✅ Load built-in Administrator account profile
+    - name: Ensure Temp directory exists
+      ansible.windows.win_file:
+        path: C:\Temp
+        state: directory
+
+    - name: Create dummy script to load Administrator profile
+      ansible.windows.win_copy:
+        content: 'echo Administrator profile loaded > C:\Temp\admin_profile_loaded.txt'
+        dest: C:\Temp\admin_profile_loader.bat
+
+    - name: Create scheduled task to load Administrator profile
+      ansible.windows.win_scheduled_task:
+        name: "LoadAdminProfile"
+        description: "Triggers profile load for Administrator"
+        actions:
+          - path: "C:\\Temp\\admin_profile_loader.bat"
+        username: "Administrator"
+        password: "{{ ansible_password }}"
+        run_level: highest
+        state: present
+        enabled: true
+        triggers:
+          - type: once
+            start_boundary: "{{ ansible_date_time.iso8601 | regex_replace('Z$', '') }}"
+
+    - name: Run the scheduled task to load Administrator profile
+      ansible.windows.win_command: schtasks /run /tn "LoadAdminProfile"
+
+    - name: Wait briefly to ensure Administrator profile loads
+      pause:
+        seconds: 5
+
+    - name: Delete scheduled task (optional cleanup)
+      ansible.windows.win_scheduled_task:
+        name: "LoadAdminProfile"
+        state: absent
