@@ -2,8 +2,6 @@
 - name: Load Administrator profile using Scheduled Tasks
   hosts: vision_servers
   gather_facts: true
-  vars:
-    windows_domain: "{{ ansible_hostname }}"
   tasks:
     - name: Create a local user
       ansible.windows.win_user:
@@ -12,5 +10,21 @@
         password_never_expires: true
         user_cannot_change_password: true
         account_disabled: false
+
+    - name: Add domain user to local administrators group
+      ansible.windows.win_group_membership:
+        name: Administrators
+        members:
+          - development\admintt
+        state: present
+
+    # - name: Load profile for domain user
+    #   win_shell: runas /user:development\admintt /profile cmd.exe
+    #   register: profile_load_result
+
+    # - name: Debug profile load output
+    #   debug:
+    #     var: profile_load_result.stdout
+
 
 
